@@ -115,6 +115,12 @@ void WriteAllLeds(char *pBase, int value)
     RegisterWrite(pBase, LEDR_BASE, value);
 }
 
+int readAllSwitches(char *pBase) {
+    int value = RegisterRead(pBase, SW_BASE);
+
+    WriteAllLeds(pBase, value);
+}
+
 /* Main Function */
 int main()
 {
@@ -145,6 +151,10 @@ int main()
     cout << "what state do you want your led (0 or 1)";
     cin >> state1;
     Write1Led(pBase, ledChange, state1);
+
+    while (true) {
+        readAllSwitches(pBase);
+    }
 
     // Done
     Finalize(pBase, fd);

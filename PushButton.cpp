@@ -118,7 +118,39 @@ void WriteAllLeds(char *pBase, int value)
 int readAllSwitches(char *pBase) {
     int value = RegisterRead(pBase, SW_BASE);
 
+    return value;
+
     WriteAllLeds(pBase, value);
+}
+
+int pushButtonGet(char *pBase) {
+    int value = RegisterRead(pBase, KEY_BASE);
+    int button0 = value & 0x1F;
+    int button1 = (value >> 1) & 0x1F;
+    int button2 = (value >> 2) & 0x1F;
+    int button3 = (value >> 3) & 0x1F;
+
+    if ((button0 + button1 + button2 + button3) > 1) {
+        sleep(0.5);
+        return 4;
+    } 
+
+    if (button0) {
+        sleep(0.5);
+        return 0;
+    } else if (button1) {
+        sleep(0.5);
+        return 1;
+    } else if (button2) {
+        sleep(0.5);
+        return 2;
+    } else if (button3) {
+        sleep(0.5);
+        return 3;
+    }
+
+
+    return -1;
 }
 
 /* Main Function */
@@ -128,32 +160,10 @@ int main()
     int fd;
     char *pBase = Initialize(&fd);
 
-    // Sample test program
-    int value = 0;
-    cout << "Enter an int value between 0 to 1023: " << endl;
-    cin >> value;
-    cout << "value to be written to LEDs = " << value << endl;
-    WriteAllLeds(pBase, value);
-
-    int readLEDs = RegisterRead(pBase, LEDR_BASE);
-
-    int switchNum;
-    int ledChange;
-    int state1;
-
-    cout << "value of LEDS read = " << readLEDs << endl;
-    cout << "Pick which switch you want to read the state of:";
-    cin >> switchNum;
-    cout << Read1Switch(pBase, switchNum) <<  endl;
-
-    cout << "What LED do you want to change:";
-    cin >> ledChange;
-    cout << "what state do you want your led (0 or 1)";
-    cin >> state1;
-    Write1Led(pBase, ledChange, state1);
+    int counter;
 
     while (true) {
-        readAllSwitches(pBase);
+        cout << pushButtonGet(pBase) << endl;
     }
 
     // Done
