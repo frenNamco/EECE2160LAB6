@@ -125,38 +125,22 @@ int readAllSwitches(char *pBase) {
 
 int pushButtonGet(char *pBase) {
     int value = RegisterRead(pBase, KEY_BASE);
-    int button0 = value & 0x1F;
-    int button1 = (value >> 1) & 0x1F;
-    int button2 = (value >> 2) & 0x1F;
-    int button3 = (value >> 3) & 0x1F;
-
-    cout << button0 << endl;
-    cout << button1 << endl;
-    cout << button2 << endl;
-    cout << button3 << endl;
-
-
-    if ((button0 + button1 + button2 + button3) > 1) {
-        sleep(0.5);
-        return 4;
-    } 
-
-    if (button0) {
-        sleep(0.5);
+    
+    switch (value)
+    {
+    case 0x0001:
         return 0;
-    } else if (button1) {
-        sleep(0.5);
+        break;
+    case 0x0002:
         return 1;
-    } else if (button2) {
-        sleep(0.5);
+    case 0x0004:
         return 2;
-    } else if (button3) {
-        sleep(0.5);
+    case 0x0008:
         return 3;
+    default:
+        return -1;
     }
 
-
-    return -1;
 }
 
 /* Main Function */
