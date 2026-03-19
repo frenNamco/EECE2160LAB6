@@ -99,33 +99,26 @@ int Read1Switch(char *pBase, int switchNum) {
 
 void Write1Led(char *pBase, int ledNum, int state){
     int value = RegisterRead(pBase, LEDR_BASE);
-    int bitToChange = state;
-    bitToChange = value << ledNum;
-    
+    int bitToChange = state << ledNum;
 
     if (state) {
-        cout << "worked";
         value = value | bitToChange;
     } else {
-        cout << "worked";
         value = value & bitToChange;
     }
 
-    cout << value << endl;
-
     RegisterWrite(pBase, LEDR_BASE, value);
-}
-
-int ReadAllSwitches(char *pBase) {
-    int value = RegisterRead(pBase, SW_BASE);
-    WriteAllLeds(pBase, value);
-
-    return value;
 }
 
 void WriteAllLeds(char *pBase, int value)
 {
     RegisterWrite(pBase, LEDR_BASE, value);
+}
+
+int readAllSwitches(char *pBase) {
+    int value = RegisterRead(pBase, SW_BASE);
+
+    WriteAllLeds(pBase, value);
 }
 
 /* Main Function */
@@ -159,9 +152,9 @@ int main()
     cin >> state1;
     Write1Led(pBase, ledChange, state1);
 
-    // while(true) {
-    //     ReadAllSwitches(pBase);
-    // }
+    while (true) {
+        readAllSwitches(pBase);
+    }
 
     // Done
     Finalize(pBase, fd);

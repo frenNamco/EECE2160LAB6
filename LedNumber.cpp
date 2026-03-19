@@ -99,8 +99,7 @@ int Read1Switch(char *pBase, int switchNum) {
 
 void Write1Led(char *pBase, int ledNum, int state){
     int value = RegisterRead(pBase, LEDR_BASE);
-    int bitToChange = state;
-    bitToChange = value << ledNum;
+    int bitToChange = state << ledNum;
 
     if (state) {
         value = value | bitToChange;
