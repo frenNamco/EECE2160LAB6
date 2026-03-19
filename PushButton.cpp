@@ -101,12 +101,17 @@ void Write1Led(char *pBase, int ledNum, int state){
     int value = RegisterRead(pBase, LEDR_BASE);
     int bitToChange = state;
     bitToChange = value << ledNum;
+    
 
     if (state) {
+        cout << "worked";
         value = value | bitToChange;
     } else {
+        cout << "worked";
         value = value & bitToChange;
     }
+
+    cout << value << endl;
 
     RegisterWrite(pBase, LEDR_BASE, value);
 }
