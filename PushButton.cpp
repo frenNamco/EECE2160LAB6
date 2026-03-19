@@ -130,6 +130,12 @@ int pushButtonGet(char *pBase) {
     int button2 = (value >> 2) & 0x1F;
     int button3 = (value >> 3) & 0x1F;
 
+    cout << button0 << endl;
+    cout << button1 << endl;
+    cout << button2 << endl;
+    cout << button3 << endl;
+
+
     if ((button0 + button1 + button2 + button3) > 1) {
         sleep(0.5);
         return 4;
@@ -164,6 +170,7 @@ int main()
 
     while (true) {
         cout << pushButtonGet(pBase) << endl;
+        sleep(1);
     }
 
     // Done
