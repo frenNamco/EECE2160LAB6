@@ -128,6 +128,8 @@ int pushButtonGet(char *pBase) {
     
     switch (value)
     {
+    case 0x0000:
+        return -1;
     case 0x0001:
         return 0;
         break;
@@ -137,12 +139,9 @@ int pushButtonGet(char *pBase) {
         return 2;
     case 0x0008:
         return 3;
-    case !(0x0001) || !(0x0002) || !(0x0004) || !(0x0008):
-        return 4;
     default:
-        return -1;
+        return 4;
     }
-
 }
 
 /* Main Function */
@@ -153,10 +152,37 @@ int main()
     char *pBase = Initialize(&fd);
 
     int counter;
+    int pushButtonState;
 
     while (true) {
         cout << pushButtonGet(pBase) << endl;
-        sleep(1);
+        sleep(0.5);
+
+        pushButtonState = pushButtonGet(pBase);
+        
+        if (pushButtonState != -1) {
+            switch (pushButtonState)
+            {
+            case 0:
+                counter++;
+                break;
+            case 1:
+                counter--;
+                break;
+            case 2:
+                counter = counter >> 1;
+                break;
+            case 3:
+                counter = counter << 1;
+                break;
+            case 4:
+                counter = 0;
+            }
+        }
+
+        if (counter > 1023) {
+            counter = 0;
+        }
     }
 
     // Done
