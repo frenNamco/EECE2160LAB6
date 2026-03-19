@@ -137,7 +137,7 @@ int pushButtonGet(char *pBase) {
         return 2;
     case 0x0008:
         return 3;
-    case !(0x0001):
+    case !(0x0001) || !(0x0002) || !(0x0004) || !(0x0008):
         return 4;
     default:
         return -1;
