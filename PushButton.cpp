@@ -154,9 +154,9 @@ int main()
     cin >> state1;
     Write1Led(pBase, ledChange, state1);
 
-    while(true) {
-        ReadAllSwitches(pBase);
-    }
+    // while(true) {
+    //     ReadAllSwitches(pBase);
+    // }
 
     // Done
     Finalize(pBase, fd);
