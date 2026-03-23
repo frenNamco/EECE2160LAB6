@@ -83,18 +83,6 @@ class LEDControl {
             fpga.RegisterWrite(LEDR_BASE, value);
         }
 
-        void WriteAllLeds(DE1SoCfpga fpga, int value) {
-            fpga.RegisterWrite(LEDR_BASE, value);
-        }
-
-        int readAllSwitches(DE1SoCfpga fpga) {
-            int value = fpga.RegisterRead(SW_BASE);
-
-            return value;
-
-            WriteAllLeds(fpga, value);
-        }
-
         void WriteAllLeds(DE1SoCfpga fpga, int value)
         {
             fpga.RegisterWrite(LEDR_BASE, value);
