@@ -119,6 +119,8 @@ int readAllSwitches(char *pBase) {
     int value = RegisterRead(pBase, SW_BASE);
 
     WriteAllLeds(pBase, value);
+
+    return value;
 }
 
 /* Main Function */
@@ -140,6 +142,7 @@ int main()
     int switchNum;
     int ledChange;
     int state1;
+    int switchState;
 
     cout << "value of LEDS read = " << readLEDs << endl;
     cout << "Pick which switch you want to read the state of:";
@@ -153,7 +156,7 @@ int main()
     Write1Led(pBase, ledChange, state1);
 
     while (true) {
-        readAllSwitches(pBase);
+        switchState = readAllSwitches(pBase);
     }
 
     // Done

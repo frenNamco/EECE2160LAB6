@@ -83,6 +83,14 @@ class LEDControl {
             fpga.RegisterWrite(LEDR_BASE, value);
         }
 
+        int Read1Switch(DE1SoCfpga fpga, int switchNum) {
+            int value = fpga.RegisterRead(SW_BASE);
+            value = value & 0x003F;
+            value = value >> switchNum;
+            value = value & 0x0001;
+            return value;
+        }
+
         void WriteAllLeds(DE1SoCfpga& fpga, int value) {
             fpga.RegisterWrite(LEDR_BASE, value);
         }
@@ -125,40 +133,70 @@ int main() {
     DE1SoCfpga fpga;
     LEDControl ledControl;
 
-    int counter;
-    int pushButtonState;
+    // Sample test program
+    int value = 0;
+    cout << "Enter an int value between 0 to 1023: " << endl;
+    cin >> value;
+    cout << "value to be written to LEDs = " << value << endl;
+    ledControl.WriteAllLeds(fpga, value);
+
+    int readLEDs = fpga.RegisterRead(LEDR_BASE);
+
+    int switchNum;
+    int ledChange;
+    int state1;
+    int switchState;
+
+    cout << "value of LEDS read = " << readLEDs << endl;
+    cout << "Pick which switch you want to read the state of:";
+    cin >> switchNum;
+    cout << ledControl.Read1Switch(fpga, switchNum) <<  endl;
+
+    cout << "What LED do you want to change:";
+    cin >> ledChange;
+    cout << "what state do you want your led (0 or 1)";
+    cin >> state1;
+    ledControl.Write1Led(fpga, ledChange, state1);
 
     while (true) {
-        sleep(0.5);
-
-        pushButtonState =ledControl.pushButtonGet(fpga);
-        
-        if (pushButtonState != -1) {
-            switch (pushButtonState)
-            {
-            case 0:
-                counter++;
-                break;
-            case 1:
-                counter--;
-                break;
-            case 2:
-                counter = counter >> 1;
-                break;
-            case 3:
-                counter = counter << 1;
-                break;
-            case 4:
-                counter = 0;
-            }
-        }
-
-        sleep(1);
-
-        if (counter > 1023) {
-            counter = 0;
-        }
+        switchState = ledControl.readAllSwitches(fpga);
     }
+
+    // int counter = 0;
+    // int pushButtonState;
+
+    // while (true) {
+
+    //     pushButtonState =ledControl.pushButtonGet(fpga);
+        
+    //     if (pushButtonState != -1) {
+    //         switch (pushButtonState)
+    //         {
+    //         case 0:
+    //             counter++;
+    //             break;
+    //         case 1:
+    //             counter--;
+    //             break;
+    //         case 2:
+    //             counter = counter >> 1;
+    //             break;
+    //         case 3:
+    //             counter = counter << 1;
+    //             break;
+    //         case 4:
+    //             counter = 0;
+    //         }
+    //     }
+
+    //     sleep(0.5);
+
+    //     cout << counter << endl;
+
+    //     if (counter > 1023 || counter < 0) {
+    //         counter = 0;
+    //     }
+    // }
 
     return 0;
 }

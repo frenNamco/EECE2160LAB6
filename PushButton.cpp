@@ -155,8 +155,6 @@ int main()
     int pushButtonState;
 
     while (true) {
-        cout << pushButtonGet(pBase) << endl;
-        sleep(0.5);
 
         pushButtonState = pushButtonGet(pBase);
         
@@ -179,8 +177,9 @@ int main()
                 counter = 0;
             }
         }
+        sleep(1);
 
-        if (counter > 1023) {
+        if (counter > 1023 || counter < 0) {
             counter = 0;
         }
     }
