@@ -117,10 +117,8 @@ void WriteAllLeds(char *pBase, int value)
 
 int readAllSwitches(char *pBase) {
     int value = RegisterRead(pBase, SW_BASE);
-
-    return value;
-
     WriteAllLeds(pBase, value);
+    return value;
 }
 
 int pushButtonGet(char *pBase) {
