@@ -70,7 +70,7 @@ class LEDControl {
 
         }
 
-        void Write1Led(DE1SoCfpga fpga, int ledNum, int state){
+        void Write1Led(DE1SoCfpga& fpga, int ledNum, int state){
             int value = fpga.RegisterRead(LEDR_BASE);
             int bitToChange = state << ledNum;
 
@@ -83,12 +83,11 @@ class LEDControl {
             fpga.RegisterWrite(LEDR_BASE, value);
         }
 
-        void WriteAllLeds(DE1SoCfpga fpga, int value)
-        {
+        void WriteAllLeds(DE1SoCfpga& fpga, int value) {
             fpga.RegisterWrite(LEDR_BASE, value);
         }
 
-        int readAllSwitches(DE1SoCfpga fpga) {
+        int readAllSwitches(DE1SoCfpga& fpga) {
             int value = fpga.RegisterRead(SW_BASE);
 
             return value;
@@ -96,7 +95,7 @@ class LEDControl {
             WriteAllLeds(fpga, value);
         }
 
-        int pushButtonGet(DE1SoCfpga fpga) {
+        int pushButtonGet(DE1SoCfpga& fpga) {
             int value = fpga.RegisterRead(KEY_BASE);
             
             switch (value)
