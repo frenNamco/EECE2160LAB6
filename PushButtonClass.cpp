@@ -83,7 +83,7 @@ class LEDControl {
             fpga.RegisterWrite(LEDR_BASE, value);
         }
 
-        int Read1Switch(DE1SoCfpga fpga, int switchNum) {
+        int Read1Switch(DE1SoCfpga& fpga, int switchNum) {
             int value = fpga.RegisterRead(SW_BASE);
             value = value & 0x003F;
             value = value >> switchNum;
@@ -198,5 +198,4 @@ int main() {
     //     }
     // }
 
-    return 0;
 }

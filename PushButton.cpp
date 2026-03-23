@@ -117,12 +117,13 @@ void WriteAllLeds(char *pBase, int value)
 
 int readAllSwitches(char *pBase) {
     int value = RegisterRead(pBase, SW_BASE);
-    WriteAllLeds(pBase, value);
+
     return value;
 }
 
 int pushButtonGet(char *pBase) {
     int value = RegisterRead(pBase, KEY_BASE);
+    
     
     switch (value)
     {
@@ -130,7 +131,6 @@ int pushButtonGet(char *pBase) {
         return -1;
     case 0x0001:
         return 0;
-        break;
     case 0x0002:
         return 1;
     case 0x0004:
@@ -149,37 +149,50 @@ int main()
     int fd;
     char *pBase = Initialize(&fd);
 
-    int counter;
+    int counter = 0;
     int pushButtonState;
+    int buttonPushedPreviousState;
 
     while (true) {
-
-        pushButtonState = pushButtonGet(pBase);
-        
-        if (pushButtonState != -1) {
+      pushButtonState = pushButtonGet(pBase);
+          
+        if (pushButtonState != -1 && pushButtonState != buttonPushedPreviousState) {
+            buttonPushedPreviousState = pushButtonState;
+            
             switch (pushButtonState)
             {
             case 0:
+                
                 counter++;
                 break;
             case 1:
+                
                 counter--;
                 break;
             case 2:
+                
                 counter = counter >> 1;
                 break;
             case 3:
+                
                 counter = counter << 1;
                 break;
             case 4:
-                counter = 0;
+                
+                counter = readAllSwitches(pBase);
+                break;
             }
+            
+        } else {
+          buttonPushedPreviousState = pushButtonState;
         }
-        sleep(1);
 
+        cout << counter << endl;
         if (counter > 1023 || counter < 0) {
             counter = 0;
         }
+        
+        WriteAllLeds(pBase, counter);
     }
 
     // Done
