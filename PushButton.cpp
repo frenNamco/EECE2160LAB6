@@ -86,59 +86,85 @@ int RegisterRead(char *pBase, unsigned int reg_offset)
 {
     return * (volatile unsigned int *)(pBase + reg_offset);
 }
-/*
-* Write a value to all LEDs
-*/
+
+/**
+ * Read1Switch reads the value of a given switch
+ * 
+ * @param   pBase       Base address returned by 'mmap'
+ * @param   switchNum   The switch who's value should be read
+ * @return              The value at the given switch
+ */
 int Read1Switch(char *pBase, int switchNum) {
-    int value = RegisterRead(pBase, SW_BASE);
-    value = value & 0x003F;
-    value = value >> switchNum;
-    value = value & 0x0001;
-    return value;
+    int value = RegisterRead(pBase, SW_BASE);       // Take in the value at the switch address
+    value = value & 0x003F;                         // Clear all unnecesary values
+    value = value >> switchNum;                     // Shift the bit representing the given switch to the lsb
+    value = value & 0x0001;                         // Clear all bits greater than the lsb
+    return value;                                   // Return the value of the given switch
 }
 
+/**
+ * Write1Led writes a value to a singular LED
+ * @param   pBase       Base address returned by 'mmap'
+ * @param   ledNum      The LED who's value should be changed
+ * @param   state       The state to change the LED to
+ */
 void Write1Led(char *pBase, int ledNum, int state){
-    int value = RegisterRead(pBase, LEDR_BASE);
-    int bitToChange = state << ledNum;
+    int value = RegisterRead(pBase, LEDR_BASE);     // Take in the current value at the LED address
+    int bitToChange = state << ledNum;              // shift the state to the bit representing the appropriate LED
 
+    // If the state is 1, bitwise OR the bit to change with the rest of the value to write the singular LED without changing the other values
+    // If the state is 0, bitwise AND the bit to change with the rest of the value to write the singular LED without changing the other values
     if (state) {
         value = value | bitToChange;
     } else {
         value = value & bitToChange;
     }
 
-    RegisterWrite(pBase, LEDR_BASE, value);
+    RegisterWrite(pBase, LEDR_BASE, value);         // Write the new value to the LED address
 }
 
+/*
+* Write a value to all LEDs
+*/
 void WriteAllLeds(char *pBase, int value)
 {
     RegisterWrite(pBase, LEDR_BASE, value);
 }
 
-int readAllSwitches(char *pBase) {
-    int value = RegisterRead(pBase, SW_BASE);
-
-    return value;
+/** Reads all the switches and returns their value in a single integer.
+*
+* @param    pBase   Base address for general-purpose I/O
+* @return           A value that represents the value of the switches
+*/
+int ReadAllSwitches(char *pBase) {
+    int value = RegisterRead(pBase, SW_BASE);   // Take in the current value at the switches address
+    return value;                               // Return that value
 }
 
-int pushButtonGet(char *pBase) {
-    int value = RegisterRead(pBase, KEY_BASE);
+/**
+ * PushButtonGet reads the push buttons and returns a value depending on which push button is pressed
+ * 
+ * @param    pBase  Base address for general-purpose I/O
+ * @return          A value indicating the button pressed, if no switches are pressed, or if two or more switches are pressed        
+ */
+int PushButtonGet(char *pBase) {
+    int value = RegisterRead(pBase, KEY_BASE); // Get the current value at the push button address
     
-    
+    // Check the current value at the address and return a different number depending on the buttons being pressed
     switch (value)
     {
     case 0x0000:
-        return -1;
+        return -1;  // Return a -1 if no button is being pressed
     case 0x0001:
-        return 0;
+        return 0;   // Return a 0 if button 0 is being pressed
     case 0x0002:
-        return 1;
+        return 1;   // Return a 1 if button 1 is being pressed
     case 0x0004:
-        return 2;
+        return 2;   // Return a 2 if button 2 is being pressed
     case 0x0008:
-        return 3;
+        return 3;   // Return a 3 if button 3 is being pressed
     default:
-        return 4;
+        return 4;   // return a 4 if 2 or more buttons are being pressed
     }
 }
 
@@ -149,49 +175,49 @@ int main()
     int fd;
     char *pBase = Initialize(&fd);
 
-    int counter = 0;
-    int pushButtonState;
-    int buttonPushedPreviousState;
+    int counter = 0;                // Counter to be used in program
+    int pushButtonState;            // Integer of the value returned by 
+    int pushButtonPreviousState;    // Integer to save the previous state of the push button
 
+    // Loop to test the program
     while (true) {
-      pushButtonState = pushButtonGet(pBase);
+      pushButtonState = PushButtonGet(pBase);   // Get the current state of the push buttons
           
-        if (pushButtonState != -1 && pushButtonState != buttonPushedPreviousState) {
-            buttonPushedPreviousState = pushButtonState;
+        // Check that a button is being pushed and a button also isn't being held
+        if (pushButtonState != -1 && pushButtonState != pushButtonPreviousState) {
+            pushButtonPreviousState = pushButtonState;  // Update the previous state with the new state if the button isn't being held
             
+            // Check the state of the push buttons
             switch (pushButtonState)
             {
             case 0:
-                
-                counter++;
+                counter++;                              // Increment the counter if button 0 is being pressed
                 break;
             case 1:
-                
-                counter--;
+                counter--;                              // Decrement the counter if button 1 is being pressed
                 break;
             case 2:
-                
-                counter = counter >> 1;
+                counter = counter >> 1;                 // Shift the counter left 1 bit if button 2 is being pressed
                 break;
             case 3:
-                
-                counter = counter << 1;
+                counter = counter << 1;                 // Shift the counter right 1 bit if button 3 is being pressed
                 break;
             case 4:
-                
-                counter = readAllSwitches(pBase);
+                counter = ReadAllSwitches(pBase);       // Set the counter to the value of the switches if more than 2 buttons are being pressed
                 break;
             }
             
         } else {
-          buttonPushedPreviousState = pushButtonState;
+            // Continously set the push previous state as the current state if a button is being held
+            pushButtonPreviousState = pushButtonState;
         }
 
-        cout << counter << endl;
+        // Reset the counter if it rolls over or if it falls below 0
         if (counter > 1023 || counter < 0) {
             counter = 0;
         }
         
+        // Display the counter on the LEDs
         WriteAllLeds(pBase, counter);
     }
 
