@@ -86,41 +86,59 @@ int RegisterRead(char *pBase, unsigned int reg_offset)
 {
     return * (volatile unsigned int *)(pBase + reg_offset);
 }
-/*
-* Write a value to all LEDs
-*/
+
+/**
+ * Read1Switch reads the value of a given switch
+ * 
+ * @param   pBase       Base address returned by 'mmap'
+ * @param   switchNum   The switch who's value should be read
+ * @return              The value at the given switch
+ */
 int Read1Switch(char *pBase, int switchNum) {
-    int value = RegisterRead(pBase, SW_BASE);
-    value = value & 0x003F;
-    value = value >> switchNum;
-    value = value & 0x0001;
-    return value;
+    int value = RegisterRead(pBase, SW_BASE);       // Take in the value at the switch address
+    value = value & 0x003F;                         // Clear all unnecesary values
+    value = value >> switchNum;                     // Shift the bit representing the given switch to the lsb
+    value = value & 0x0001;                         // Clear all bits greater than the lsb
+    return value;                                   // Return the value of the given switch
 }
 
+/**
+ * Write1Led writes a value to a singular LED
+ * @param   pBase       Base address returned by 'mmap'
+ * @param   ledNum      The LED who's value should be changed
+ * @param   state       The state to change the LED to
+ */
 void Write1Led(char *pBase, int ledNum, int state){
-    int value = RegisterRead(pBase, LEDR_BASE);
-    int bitToChange = state << ledNum;
+    int value = RegisterRead(pBase, LEDR_BASE);     // Take in the current value at the LED address
+    int bitToChange = state << ledNum;              // shift the state to the bit representing the appropriate LED
 
+    // If the state is 1, bitwise OR the bit to change with the rest of the value to write the singular LED without changing the other values
+    // If the state is 0, bitwise AND the bit to change with the rest of the value to write the singular LED without changing the other values
     if (state) {
         value = value | bitToChange;
     } else {
         value = value & bitToChange;
     }
 
-    RegisterWrite(pBase, LEDR_BASE, value);
+    RegisterWrite(pBase, LEDR_BASE, value);         // Write the new value to the LED address
 }
 
+/*
+* Write a value to all LEDs
+*/
 void WriteAllLeds(char *pBase, int value)
 {
     RegisterWrite(pBase, LEDR_BASE, value);
 }
 
-int readAllSwitches(char *pBase) {
-    int value = RegisterRead(pBase, SW_BASE);
-
-    WriteAllLeds(pBase, value);
-
-    return value;
+/** Reads all the switches and returns their value in a single integer.
+*
+* @param    pBase   Base address for general-purpose I/O
+* @return           A value that represents the value of the switches
+*/
+int ReadAllSwitches(char *pBase) {
+    int value = RegisterRead(pBase, SW_BASE);   // Take in the current value at the switches address
+    return value;                               // Return that value
 }
 
 /* Main Function */
@@ -156,7 +174,7 @@ int main()
     Write1Led(pBase, ledChange, state1);
 
     while (true) {
-        switchState = readAllSwitches(pBase);
+        switchState = ReadAllSwitches(pBase);
     }
 
     // Done
