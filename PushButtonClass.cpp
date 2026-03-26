@@ -60,7 +60,6 @@ class DE1SoCfpga {
 };
 
 class LEDControl {
-
     public:
         LEDControl() {
 
@@ -70,57 +69,85 @@ class LEDControl {
 
         }
 
-        void Write1Led(DE1SoCfpga& fpga, int ledNum, int state){
-            int value = fpga.RegisterRead(LEDR_BASE);
-            int bitToChange = state << ledNum;
+        /** WriteAllLeds writes a value to all LEDs
+         * @param   fpga    The fpga object passed by reference
+         * @param   value   The value to be written to the LEDs
+         * @return          Doesn't return anything
+        */
+        void WriteAllLeds(DE1SoCfpga& fpga, int value) {
+            fpga.RegisterWrite(LEDR_BASE, value);
+        }
 
+        /**
+         * Write1Led writes a value to a singular LED
+         * @param   fpga    The fpga object passed by reference
+         * @param   ledNum      The LED who's value should be changed
+         * @param   state       The state to change the LED to
+         */
+        void Write1Led(DE1SoCfpga& fpga, int ledNum, int state){
+            int value = fpga.RegisterRead(LEDR_BASE);   // Take in the current value at the LED address
+            int bitToChange = state << ledNum;          // shift the state to the bit representing the appropriate LED
+
+            // If the state is 1, bitwise OR the bit to change with the rest of the value to write the singular LED without changing the other values
+            // If the state is 0, bitwise AND the bit to change with the rest of the value to write the singular LED without changing the other values
             if (state) {
                 value = value | bitToChange;
             } else {
                 value = value & bitToChange;
             }
 
-            fpga.RegisterWrite(LEDR_BASE, value);
+            fpga.RegisterWrite(LEDR_BASE, value);   // Write the new value to the LED address
         }
 
+        /**
+         * Read1Switch reads the value of a given switch
+         * 
+         * @param   fpga        The fpga object passed by reference
+         * @param   switchNum   The switch who's value should be read
+         * @return              The value at the given switch
+         */
         int Read1Switch(DE1SoCfpga& fpga, int switchNum) {
-            int value = fpga.RegisterRead(SW_BASE);
-            value = value & 0x003F;
-            value = value >> switchNum;
-            value = value & 0x0001;
-            return value;
+            int value = fpga.RegisterRead(SW_BASE); // Take in the value at the switch address
+            value = value & 0x003F;                 // Clear all unnecesary values
+            value = value >> switchNum;             // Shift the bit representing the given switch to the lsb
+            value = value & 0x0001;                 // Clear all bits greater than the lsb
+            return value;                           // Return the value of the given switch
         }
 
-        void WriteAllLeds(DE1SoCfpga& fpga, int value) {
-            fpga.RegisterWrite(LEDR_BASE, value);
-        }
-
+        /** Reads all the switches and returns their value in a single integer.
+        *
+        * @param   fpga     The fpga object passed by reference
+        * @return           A value that represents the value of the switches
+        */
         int readAllSwitches(DE1SoCfpga& fpga) {
-            int value = fpga.RegisterRead(SW_BASE);
-
-            return value;
-
-            WriteAllLeds(fpga, value);
+            int value = fpga.RegisterRead(SW_BASE);     // Take in the current value at the switches address
+            return value;                               // Return that value
         }
 
+        /**
+         * PushButtonGet reads the push buttons and returns a value depending on which push button is pressed
+         * 
+         * @param    pBase  Base address for general-purpose I/O
+         * @return          A value indicating the button pressed, if no switches are pressed, or if two or more switches are pressed        
+         */
         int pushButtonGet(DE1SoCfpga& fpga) {
-            int value = fpga.RegisterRead(KEY_BASE);
-            
+            int value = fpga.RegisterRead(KEY_BASE);    // Get the current value at the push button address
+    
+            // Check the current value at the address and return a different number depending on the buttons being pressed
             switch (value)
             {
             case 0x0000:
-                return -1;
+                return -1;  // Return a -1 if no button is being pressed
             case 0x0001:
-                return 0;
-                break;
+                return 0;   // Return a 0 if button 0 is being pressed
             case 0x0002:
-                return 1;
+                return 1;   // Return a 1 if button 1 is being pressed
             case 0x0004:
-                return 2;
+                return 2;   // Return a 2 if button 2 is being pressed
             case 0x0008:
-                return 3;
+                return 3;   // Return a 3 if button 3 is being pressed
             default:
-                return 4;
+                return 4;   // return a 4 if 2 or more buttons are being pressed
             }
         }
 };
@@ -130,72 +157,5 @@ class LEDControl {
 
 /* Main Function */
 int main() {
-    DE1SoCfpga fpga;
-    LEDControl ledControl;
-
-    // Sample test program
-    int value = 0;
-    cout << "Enter an int value between 0 to 1023: " << endl;
-    cin >> value;
-    cout << "value to be written to LEDs = " << value << endl;
-    ledControl.WriteAllLeds(fpga, value);
-
-    int readLEDs = fpga.RegisterRead(LEDR_BASE);
-
-    int switchNum;
-    int ledChange;
-    int state1;
-    int switchState;
-
-    cout << "value of LEDS read = " << readLEDs << endl;
-    cout << "Pick which switch you want to read the state of:";
-    cin >> switchNum;
-    cout << ledControl.Read1Switch(fpga, switchNum) <<  endl;
-
-    cout << "What LED do you want to change:";
-    cin >> ledChange;
-    cout << "what state do you want your led (0 or 1)";
-    cin >> state1;
-    ledControl.Write1Led(fpga, ledChange, state1);
-
-    while (true) {
-        switchState = ledControl.readAllSwitches(fpga);
-    }
-
-    // int counter = 0;
-    // int pushButtonState;
-
-    // while (true) {
-
-    //     pushButtonState =ledControl.pushButtonGet(fpga);
-        
-    //     if (pushButtonState != -1) {
-    //         switch (pushButtonState)
-    //         {
-    //         case 0:
-    //             counter++;
-    //             break;
-    //         case 1:
-    //             counter--;
-    //             break;
-    //         case 2:
-    //             counter = counter >> 1;
-    //             break;
-    //         case 3:
-    //             counter = counter << 1;
-    //             break;
-    //         case 4:
-    //             counter = 0;
-    //         }
-    //     }
-
-    //     sleep(0.5);
-
-    //     cout << counter << endl;
-
-    //     if (counter > 1023 || counter < 0) {
-    //         counter = 0;
-    //     }
-    // }
-
+    return 0;
 }
